@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tablas de verdad, tautologías y equivalencias</title>
+<!-- Hadrianus Muratellensis me fecit · Licencia CC BY-NC-SA 4.0 -->
+<style>
+:root{--f:'Times New Roman',Times,serif}
+*{box-sizing:border-box}
+body{font-family:var(--f);font-size:18px;line-height:1.5;color:#111;background:#fff;margin:0 auto;padding:12px;max-width:920px}
+h1{font-size:1.7em;margin:.3em 0}
+h2{font-size:1.4em;margin:1.6em 0 .4em}
+h3{font-size:1.15em;margin:0 0 .4em}
+nav a{display:inline-block;margin:2px 10px 2px 0;color:#111}
+.box{border:1px solid #999;border-radius:6px;padding:10px 14px;margin:12px 0}
+.def{background:#f4f4f4}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.tv{border-collapse:collapse;margin:8px 0;font-size:1em}
+table.tv th,table.tv td{border:1px solid #777;padding:4px 8px;text-align:center;min-width:46px;white-space:nowrap}
+table.tv th{background:#f0f0f0}
+table.tv th.main{background:#ddd}
+td.fix{color:#444}
+button{font-family:var(--f);font-size:1em;cursor:pointer;touch-action:manipulation}
+button.cell{width:46px;height:42px;border:1px solid #666;background:#fff;border-radius:4px;padding:0}
+button.cell.ok{background:#d6efd6}
+button.cell.bad{background:#f5d0d0}
+button.cell.shown{background:#e4e4f4}
+button.act,button.opt,button.sym{border:1px solid #444;background:#fff;border-radius:6px;padding:9px 14px;margin:4px 6px 4px 0;min-height:44px}
+button.opt.sel{background:#e0e0e0;font-weight:bold}
+button.opt.ok{background:#d6efd6}
+button.opt.bad{background:#f5d0d0}
+.sym{min-width:46px;font-size:1.15em}
+.lvl{font-size:.8em;border:1px solid #777;border-radius:10px;padding:1px 8px;margin-left:6px;font-weight:normal}
+.fb{margin:8px 0;padding:8px 12px;border-radius:6px;background:#f4f4f4;display:none}
+.fb.ok{background:#e1f3e1}.fb.bad{background:#faeaea}
+ol.steps li{margin:4px 0}
+ol.steps li.done::marker{content:"✔ "}
+ol.steps li.fail{color:#8a1c1c}
+.dic{margin:4px 0 8px;padding-left:20px}
+input.f{font-family:var(--f);font-size:1.1em;padding:8px;width:100%;max-width:420px;border:1px solid #666;border-radius:6px}
+.cnt{position:sticky;top:0;background:#fff;padding:6px 0;z-index:5;font-weight:bold}
+footer{margin:2em 0 1em;font-size:.85em;color:#444}
+.cols{display:flex;flex-wrap:wrap;gap:0 24px}
+
+input.f,select.f{font-family:var(--f);font-size:1.1em;padding:8px;width:100%;max-width:420px;border:1px solid #666;border-radius:6px;background:#fff;display:block;margin:4px 0 10px}
+#tbar{display:none;position:fixed;top:0;left:0;right:0;z-index:50;background:#fff;border-bottom:1px solid #777;text-align:center;font-weight:bold;padding:6px 8px;font-size:1.05em}
+#tbar.mid{background:#fff3cd}#tbar.low{background:#f5d0d0}
+#warn{display:none;font-weight:normal;color:#8a1c1c;font-size:.85em}
+body.run #tbar{display:block}body.run{padding-top:62px}body.run .cnt{top:44px}
+#wm{display:none;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:40}body.run #wm{display:block}
+#login,#end{display:none}
+body.locked #login{display:block}
+body.locked.done #login{display:none}body.locked.done #end{display:block}
+body.locked>*:not(#login):not(#end):not(script){display:none!important}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,select{-webkit-user-select:text;user-select:text}
+</style>
+</head>
+<body class="locked">
+<div id="tbar">Tiempo restante: <span id="tt">30:00</span><span id="tloc"></span><div id="warn"></div></div>
+<div id="wm"></div>
+<div id="login" class="box">
+<h2 style="margin-top:0">Antes de empezar</h2>
+<p><b>Instrucciones de realización.</b> Tienes 30 minutos en total, contados desde que pulses «Empezar». El reloj lo controla el servidor: recargar la página, cerrarla o cambiar de dispositivo no lo reinicia, y al llegar a cero la actividad se cierra sola. Escribe tu nombre real, elige tu clase e introduce el código que da el profesor. Haz los ejercicios en el orden que quieras; «Comprobar» y «Ver corrección» son ayudas, pero el profesor verá cuántas veces las usas.</p>
+<p><b>Instrucciones de calificación.</b> Es una práctica. Se registran los ejercicios que resuelves bien y cuántos has resuelto sin pulsar «Ver corrección» (nota orientativa sobre 10 = ejercicios sin ayuda ÷ 20 × 10). El profesor decide si la tiene en cuenta.</p>
+<p><b>Prohibiciones.</b> No salir de la pestaña ni de la aplicación (cada salida y su duración quedan registradas); no copiar, pegar ni abrir el menú contextual; no usar dos dispositivos a la vez; no compartir el código de sesión; no hacer la actividad con el nombre de otra persona.</p>
+<label for="lnom"><b>Nombre y apellidos</b></label><input class="f" id="lnom" autocomplete="off">
+<label for="lcla"><b>Clase</b></label><select class="f" id="lcla"><option value="">— Elige tu clase —</option><option>1.º Bachillerato B</option><option>1.º Bachillerato C</option><option>1.º Bachillerato D</option><option>1.º Bachillerato F</option></select>
+<label for="lmail"><b>Correo del centro</b> (si lo tienes)</label><input class="f" id="lmail" type="email" autocomplete="off">
+<label for="lcod"><b>Código de sesión</b></label><input class="f" id="lcod" autocomplete="off" autocapitalize="off">
+<p><label><input type="checkbox" id="lacc"> He leído las instrucciones y acepto las normas.</label></p>
+<button class="act" id="lgo">Empezar</button>
+<div class="fb" id="lmsg"></div>
+</div>
+<div id="end" class="box"><h2 style="margin-top:0">Actividad finalizada</h2><p id="emsg"></p><p id="esum"></p></div>
+
+<h1>Tablas de verdad, tautologías y equivalencias</h1>
+<p>Filosofía · 1.º de Bachillerato · Práctica de lógica proposicional. Lee la teoría, haz la comprobación rápida y resuelve los ejercicios: la actividad te corrige y te explica cada paso. No se guarda ninguna nota; es para que practiques.</p>
+<nav><a href="#teoria">1. Teoría</a><a href="#rapida">2. Comprobación</a><a href="#conectivas">3. Conectivas</a><a href="#metodo">4. Método</a><a href="#clases">5. Tipos de fórmulas</a><a href="#practica">6. Ejercicios</a><a href="#lab">7. Laboratorio</a></nav>
+
+<h2 id="teoria">1. ¿Qué es un valor de verdad?</h2>
+<div class="box def">
+<p>Una <b>proposición</b> es un enunciado que se puede decir que es verdadero o falso. «Fuerteventura es una isla» es una proposición. «¿Vienes al recreo?», «¡Silencio!» o «Ojalá llueva» <b>no</b> lo son: no afirman nada que pueda ser cierto o falso.</p>
+<p>El <b>valor de verdad</b> de una proposición es <b>V</b> (verdadera) o <b>F</b> (falsa). La lógica clásica trabaja con solo esos dos valores (principio de bivalencia): toda proposición es V o F, y no las dos a la vez.</p>
+<p>Aunque aún no sepamos si es cierta, «Mañana lloverá en Puerto del Rosario» es una proposición: tendrá un valor de verdad cuando llegue mañana.</p>
+</div>
+<p>Las proposiciones <b>simples</b> se simbolizan con letras (p, q, r, s). Las <b>compuestas</b> se forman uniéndolas con conectivas. El valor de verdad de una compuesta depende solo de los valores de las partes: de eso se encarga la tabla de verdad.</p>
+
+<h2 id="rapida">2. Comprobación rápida: ¿proposición o no?</h2>
+<div id="rapidas"></div>
+
+<h2 id="conectivas">3. Las conectivas, con ejemplos de la vida diaria</h2>
+<div class="cols" id="conn"></div>
+<div class="box">
+<p><b>Ojo con la «o».</b> En lógica, p ∨ q es <i>inclusiva</i>: también es V si se dan las dos. «Quiero pizza o hamburguesa» en lenguaje cotidiano suele significar «una de las dos» (exclusiva), pero ∨ no lo exige.</p>
+<p><b>Ojo con «si… entonces».</b> Piensa en una promesa: «Si apruebas, te invito a un helado». Solo has sido engañado (F) si apruebas y no te invito. Si no apruebas, la promesa no se rompe, haga lo que haga quien promete.</p>
+</div>
+
+<h2 id="metodo">4. Cómo se construye una tabla de verdad</h2>
+<ol>
+<li>Identifica las <b>letras proposicionales</b> distintas (n). La tabla tendrá 2<sup>n</sup> filas: 2 letras → 4 filas, 3 letras → 8 filas.</li>
+<li>Escribe todas las combinaciones de V y F. Orden habitual: la primera letra lleva V en la mitad superior y F en la inferior, la siguiente alterna de 2 en 2…, y así hasta empezar por todo V y acabar en todo F.</li>
+<li>Descompón la fórmula en <b>subfórmulas</b> y calcula una columna por cada una, <b>de dentro hacia fuera</b>: primero los paréntesis más internos y las negaciones, y al final la conectiva principal.</li>
+<li>La última columna (la de la conectiva principal) es el resultado de la fórmula completa.</li>
+<li>Mira esa columna final para clasificarla (ver apartado 5).</li>
+</ol>
+
+<h2 id="clases">5. Tautologías, contradicciones, contingencias y equivalencias</h2>
+<div class="box def">
+<p><b>Tautología:</b> la columna final solo tiene V. Es verdadera pase lo que pase. Ejemplo: «Mañana llueve o no llueve» (p ∨ ¬p).</p>
+<p><b>Contradicción:</b> la columna final solo tiene F. Es falsa pase lo que pase. Ejemplo: «Estoy en clase y no estoy en clase» (p ∧ ¬p).</p>
+<p><b>Contingencia:</b> la columna final mezcla V y F. Depende de los hechos. Ejemplo: «Si estudio, apruebo» (p → q).</p>
+<p><b>Equivalencia:</b> dos fórmulas son equivalentes cuando tienen <b>la misma columna final</b> (mismo valor en todas las filas). Se escribe A ≡ B. Equivalen, por ejemplo, p → q y ¬p ∨ q; la ley de De Morgan ¬(p ∧ q) ≡ ¬p ∨ ¬q; el contrarrecíproco p → q ≡ ¬q → ¬p. En cambio, p → q <b>no</b> equivale a su recíproco q → p.</p>
+</div>
+
+<h2 id="practica">6. Ejercicios</h2>
+<p><b>Cómo se usa:</b> toca una casilla para poner V, vuelve a tocarla para F y otra vez para dejarla vacía. Rellena las columnas de izquierda a derecha, pulsa <i>Comprobar</i> y lee las pistas. Si te atascas, usa <i>Ver corrección</i>: rellena la tabla y explica cada paso. Después pulsa <i>Reiniciar</i> y vuelve a intentarlo tú solo.</p>
+<div class="cnt" id="cnt"></div>
+<div id="ej"></div>
+
+<h2 id="lab">7. Laboratorio: inventa tu propia fórmula</h2>
+<p>Escribe una fórmula con las letras p, q, r, s y los símbolos ¬ ∧ ∨ → ↔ (usa los botones). Verás su tabla completa y su clasificación. Úsalo para comprobar tus ejercicios o para probar frases de tu vida diaria.</p>
+<div id="symbtn"></div>
+<input class="f" id="labin" value="(p → q) ↔ (¬p ∨ q)" aria-label="Fórmula" autocomplete="off" autocapitalize="off">
+<div><button class="act" id="labgo">Calcular tabla</button></div>
+<div id="labout" class="scroll"></div>
+
+<footer>Hadrianus Muratellensis me fecit · Licencia CC BY-NC-SA 4.0</footer>
+<script>
+var TV=(function(){
+var C={ENDPOINT:'https://script.google.com/macros/s/AKfycbxs95beMwN0BrZoGsDw8GJugWBYa3r-nA1yh7j7pPKOjjcRiTPn2Ec3193XWB41y4Fm/exec',MAX_SALIDAS:3,LATIDO:10000,MIN_LOCAL:30,TOTAL:20};
+var S={sid:null,end:0,solved:[],helped:[],checks:0,salidas:0,fuera:0,q:[],on:false,fin:false,lastOk:0,hid:0,i1:0,i2:0,local:C.ENDPOINT.indexOf('PEGA')===0};
+function $(i){return document.getElementById(i)}
+function dev(){var d='';try{d=localStorage.getItem('tv_dev')||'';if(!d){d=Math.random().toString(36).slice(2,10);localStorage.setItem('tv_dev',d)}}catch(e){}return d||Math.random().toString(36).slice(2,10)}
+S.dev=dev();
+function post(p){return fetch(C.ENDPOINT,{method:'POST',body:JSON.stringify(p),keepalive:true}).then(function(r){return r.json()})}
+function log(t,det){if(!S.on)return;S.q.push({t:Date.now(),tipo:t,det:det||''});if(S.q.length>200)S.q.shift()}
+function add(a,n){if(a.indexOf(n)<0)a.push(n)}
+function fmt(s){var m=Math.floor(s/60),x=s%60;return (m<10?'0':'')+m+':'+(x<10?'0':'')+x}
+function wm(t){var x=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+ var svg='<svg xmlns="http://www.w3.org/2000/svg" width="460" height="260"><text x="20" y="140" font-family="Times New Roman,serif" font-size="20" fill="#000" fill-opacity="0.07" transform="rotate(-25 230 130)">'+x+'</text></svg>';
+ $('wm').style.backgroundImage='url("data:image/svg+xml,'+encodeURIComponent(svg)+'")'}
+function tick(){if(!S.on)return;var r=Math.max(0,Math.round((S.end-Date.now())/1000));
+ $('tt').textContent=fmt(r);$('tbar').className=r<=60?'low':r<=300?'mid':'';
+ if(r<=0)finish('Se ha agotado el tiempo de la actividad.')}
+function view(msg){document.body.className='locked done';$('emsg').textContent=msg;
+ $('esum').textContent=S.sid?'Ejercicios resueltos: '+S.solved.length+' de '+C.TOTAL+' ('+S.solved.filter(function(n){return S.helped.indexOf(n)<0}).length+' sin pulsar «Ver corrección»).':''}
+function finish(msg,srv){if(S.fin)return;S.fin=true;log('fin',msg);var p=srv?null:flush(true);S.on=false;
+ clearInterval(S.i1);clearInterval(S.i2);view(msg)}
+function flush(fin){
+ if(S.local||!S.sid)return Promise.resolve();
+ var ev=S.q.splice(0,S.q.length);
+ return post({a:'beat',sid:S.sid,dev:S.dev,fin:!!fin,events:ev,state:{salidas:S.salidas,fuera:S.fuera,checks:S.checks,solved:S.solved,helped:S.helped}}).then(function(r){
+  var now=Date.now();
+  if(S.lastOk&&now-S.lastOk>35000)S.q.push({t:now,tipo:'desconexion',det:Math.round((now-S.lastOk)/1000)+' s sin latido'});
+  S.lastOk=now;
+  if(r&&r.ok){if(r.fin||r.restante<=0)finish('El servidor ha cerrado la actividad.',true);else S.end=Date.now()+r.restante*1000}
+ }).catch(function(){S.q=ev.concat(S.q)})}
+function begin(r,res){S.sid=r.sid;S.on=true;S.lastOk=Date.now();S.end=Date.now()+r.restante*1000;
+ try{localStorage.setItem('tv_s',JSON.stringify({sid:r.sid}))}catch(e){}
+ document.body.className='run';wm(r.nombre+' · '+r.clase);
+ if(S.local)$('tloc').textContent=' · MODO PRUEBA (no se registra nada)';
+ log(res?'reanudada':'inicio',navigator.userAgent.slice(0,100));tick();
+ S.i1=setInterval(tick,1000);S.i2=setInterval(function(){flush()},C.LATIDO);window.scrollTo(0,0)}
+function boot(){
+ if(S.local)return;var sv=null;try{sv=JSON.parse(localStorage.getItem('tv_s')||'null')}catch(e){}
+ if(sv&&sv.sid)post({a:'resume',sid:sv.sid,dev:S.dev}).then(function(r){if(r.ok)begin(r,true);else if(r.expired)view(r.msg)}).catch(function(){})}
+$('lgo').onclick=function(){
+ var n=$('lnom').value.trim(),c=$('lcla').value,k=$('lcod').value.trim(),m=$('lmail').value.trim(),msg=$('lmsg');
+ function err(t){msg.style.display='block';msg.className='fb bad';msg.textContent=t}
+ if(n.length<5||n.split(/\s+/).length<2)return err('Escribe tu nombre y apellidos.');
+ if(!c)return err('Elige tu clase.');
+ if(!k)return err('Escribe el código de sesión que ha dado el profesor.');
+ if(!$('lacc').checked)return err('Debes aceptar las normas.');
+ if(S.local){begin({sid:'local',restante:C.MIN_LOCAL*60,nombre:n,clase:c});return}
+ $('lgo').disabled=true;
+ post({a:'start',nombre:n,clase:c,correo:m,codigo:k,dev:S.dev,ua:navigator.userAgent.slice(0,120)}).then(function(r){
+  $('lgo').disabled=false;if(r.ok)begin(r,false);else if(r.expired)view(r.msg);else err(r.msg||'No se pudo iniciar.')
+ }).catch(function(){$('lgo').disabled=false;err('No hay conexión con el servidor. Comprueba la red e inténtalo de nuevo.')})};
+document.addEventListener('visibilitychange',function(){
+ if(!S.on)return;
+ if(document.hidden){S.hid=Date.now();flush()}
+ else if(S.hid){var s=Math.round((Date.now()-S.hid)/1000);S.hid=0;S.salidas++;S.fuera+=s;
+  log('salida','fuera '+s+' s (salida n.º '+S.salidas+')');
+  if(S.salidas>=C.MAX_SALIDAS){var w=$('warn');w.style.display='block';w.textContent='⚠ Has salido '+S.salidas+' veces de la actividad. Queda registrado y el profesor lo verá.'}
+  flush()}});
+window.addEventListener('pagehide',function(){if(S.on){log('cierre','pagehide');flush()}});
+['copy','cut','paste','contextmenu'].forEach(function(t){document.addEventListener(t,function(e){
+ if(!S.on)return;e.preventDefault();
+ var d='intento';if(t==='paste'){try{d=((e.clipboardData&&e.clipboardData.getData('text'))||'').length+' caracteres'}catch(x){}}
+ log(t==='paste'?'pegado':t==='contextmenu'?'clic derecho':'copiar',d)})});
+return {log:log,boot:boot,check:function(){S.checks++},solve:function(n){add(S.solved,n);log('resuelto','ej '+n)},help:function(n){add(S.helped,n);log('ver_correccion','ej '+n)},S:S,tick:tick};
+})();
+</script>
+<script>
+(function(){
+'use strict';
+var VARS=['p','q','r','s'],OPS='¬∧∨→↔()';
+function tokenize(s){
+  s=s.replace(/<->|<=>/g,'↔').replace(/->|=>/g,'→').replace(/[~!\-]/g,'¬').replace(/[&^]/g,'∧').replace(/\|/g,'∨').replace(/\s+/g,'');
+  var t=s.split('');
+  t.forEach(function(c){if(VARS.indexOf(c)<0&&OPS.indexOf(c)<0)throw 'Símbolo no permitido: «'+c+'». Usa p, q, r, s y ¬ ∧ ∨ → ↔ ( ).'});
+  return t}
+function parse(src){
+  var t=tokenize(src),i=0;
+  function pk(){return t[i]}
+  function iff(){var l=imp();while(pk()==='↔'){i++;l={t:'bin',op:'↔',l:l,r:imp()}}return l}
+  function imp(){var l=or();if(pk()==='→'){i++;return {t:'bin',op:'→',l:l,r:imp()}}return l}
+  function or(){var l=and();while(pk()==='∨'){i++;l={t:'bin',op:'∨',l:l,r:and()}}return l}
+  function and(){var l=neg();while(pk()==='∧'){i++;l={t:'bin',op:'∧',l:l,r:neg()}}return l}
+  function neg(){
+    var c=pk();
+    if(c==='¬'){i++;return {t:'not',a:neg()}}
+    if(c==='('){i++;var e=iff();if(pk()!==')')throw 'Falta un paréntesis de cierre.';i++;return e}
+    if(c&&VARS.indexOf(c)>=0){i++;return {t:'var',n:c}}
+    throw 'La fórmula está incompleta o mal escrita.'}
+  if(!t.length)throw 'Escribe una fórmula.';
+  var r=iff();if(i<t.length)throw 'La fórmula está mal escrita (revisa paréntesis y conectivas).';return r}
+function str(n,top){
+  if(n.t==='var')return n.n;
+  if(n.t==='not')return '¬'+str(n.a);
+  var s=str(n.l)+' '+n.op+' '+str(n.r);return top?s:'('+s+')'}
+function ev(n,e){
+  if(n.t==='var')return e[n.n];
+  if(n.t==='not')return !ev(n.a,e);
+  var a=ev(n.l,e),b=ev(n.r,e);
+  return n.op==='∧'?(a&&b):n.op==='∨'?(a||b):n.op==='→'?(!a||b):(a===b)}
+function vars(n,o){
+  if(n.t==='var'){if(o.indexOf(n.n)<0)o.push(n.n)}
+  else if(n.t==='not')vars(n.a,o);else{vars(n.l,o);vars(n.r,o)}
+  return o}
+function subs(n,o){
+  if(n.t==='var')return o;
+  if(n.t==='not')subs(n.a,o);else{subs(n.l,o);subs(n.r,o)}
+  var k=str(n,true);if(!o.some(function(x){return x.k===k}))o.push({k:k,n:n});return o}
+function rows(vs){
+  var N=1<<vs.length,R=[],i;
+  for(i=0;i<N;i++){var e={};vs.forEach(function(v,j){e[v]=!((i>>(vs.length-1-j))&1)});R.push(e)}
+  return R}
+function vf(b){return b?'V':'F'}
+function expl(n){
+  if(n.t==='not')return 'Es una negación: se invierte el valor de «'+str(n.a,true)+'» (donde era V pones F, y al revés).';
+  var L='«'+str(n.l,true)+'»',R='«'+str(n.r,true)+'»';
+  if(n.op==='∧')return 'Es una conjunción: solo es V cuando '+L+' y '+R+' son V a la vez; en cualquier otro caso es F.';
+  if(n.op==='∨')return 'Es una disyunción: solo es F cuando '+L+' y '+R+' son F a la vez; si al menos una es V, es V.';
+  if(n.op==='→')return 'Es un condicional: solo es F cuando el antecedente '+L+' es V y el consecuente '+R+' es F (promesa rota). En los demás casos es V.';
+  return 'Es un bicondicional: es V cuando '+L+' y '+R+' tienen el mismo valor (las dos V o las dos F) y F cuando difieren.'}
+
+function Table(host,node,vs,editable){
+  var cols=subs(node,[]),R=rows(vs);
+  var ans=cols.map(function(c){return R.map(function(e){return ev(c.n,e)})});
+  var st=cols.map(function(){return R.map(function(){return 0})});
+  var h='<div class="scroll"><table class="tv"><thead><tr>';
+  vs.forEach(function(v){h+='<th>'+v+'</th>'});
+  cols.forEach(function(c,j){h+='<th'+(j===cols.length-1?' class="main"':'')+'>'+c.k+'</th>'});
+  h+='</tr></thead><tbody>';
+  R.forEach(function(e,i){
+    h+='<tr>';vs.forEach(function(v){h+='<td class="fix">'+vf(e[v])+'</td>'});
+    cols.forEach(function(c,j){h+=editable?'<td><button class="cell" data-c="'+j+'" data-r="'+i+'" aria-label="'+c.k+', fila '+(i+1)+'"></button></td>':'<td>'+vf(ans[j][i])+'</td>'});
+    h+='</tr>'});
+  h+='</tbody></table></div>';
+  if(editable){
+    h+='<ol class="steps"><li>Letras: <b>'+vs.join(', ')+'</b> → 2<sup>'+vs.length+'</sup> = '+R.length+' filas. Las combinaciones ya están escritas.</li>';
+    cols.forEach(function(c,j){h+='<li>Columna <b>'+c.k+'</b>. '+expl(c.n)+(j===cols.length-1?' Es la conectiva principal: esta columna es el resultado final.':'')+'</li>'});
+    h+='</ol>'}
+  host.innerHTML=h;
+  function btn(j,i){return host.querySelector('button[data-c="'+j+'"][data-r="'+i+'"]')}
+  function paint(j,i,cls){var b=btn(j,i);b.textContent=['','V','F'][st[j][i]];b.className='cell'+(cls?' '+cls:'')}
+  function lis(){return host.querySelectorAll('ol.steps li')}
+  if(editable)host.addEventListener('click',function(x){
+    var b=x.target.closest&&x.target.closest('button.cell');if(!b)return;
+    var j=+b.getAttribute('data-c'),i=+b.getAttribute('data-r');st[j][i]=(st[j][i]+1)%3;paint(j,i,'')});
+  return {
+    check:function(){
+      var good=0,tot=0,first=-1,L=lis();
+      cols.forEach(function(c,j){var ok=true;
+        R.forEach(function(e,i){var o=st[j][i]===(ans[j][i]?1:2);tot++;if(o)good++;else ok=false;paint(j,i,o?'ok':'bad')});
+        if(!ok&&first<0)first=j;L[j+1].className=ok?'done':'fail'});
+      return {all:good===tot,good:good,tot:tot,hint:first<0?'':'Revisa la columna «'+cols[first].k+'». '+expl(cols[first].n)}},
+    reveal:function(){var L=lis();cols.forEach(function(c,j){R.forEach(function(e,i){st[j][i]=ans[j][i]?1:2;paint(j,i,'shown')});L[j+1].className='done'})},
+    reset:function(){var L=lis();cols.forEach(function(c,j){R.forEach(function(e,i){st[j][i]=0;paint(j,i,'')});L[j+1].className=''})},
+    final:function(){return ans[cols.length-1]},
+    rows:R}
+}
+var solved={},TOTAL=0;
+function cnt(){document.getElementById('cnt').textContent='Ejercicios resueltos: '+Object.keys(solved).length+' / '+TOTAL}
+var CL=['Tautología','Contradicción','Contingencia'],EQ=['Son equivalentes','No son equivalentes'];
+function Exercise(e,parent){
+  var A=parse(e.f),B=e.g?parse(e.g):null,vs=VARS.filter(function(v){return vars(A,[]).indexOf(v)>=0||(B&&vars(B,[]).indexOf(v)>=0)});
+  var q=B?'eq':(e.cl?'cl':null),opts=q==='eq'?EQ:CL,sel=-1;
+  var el=document.createElement('div');el.className='box';
+  var h='<h3>'+e.n+'. '+e.t+'<span class="lvl">Nivel '+e.lvl+'</span></h3><p>'+e.ctx+'</p><ul class="dic">'+
+    Object.keys(e.dic).map(function(k){return '<li><b>'+k+'</b>: '+e.dic[k]+'</li>'}).join('')+'</ul>';
+  h+=B?'<p>Fórmulas: <b>A: '+str(A,true)+'</b> y <b>B: '+str(B,true)+'</b>.</p><p><b>Tabla de A</b></p>':'<p>Fórmula: <b>'+str(A,true)+'</b></p>';
+  h+='<div class="tA"></div>'+(B?'<p><b>Tabla de B</b></p><div class="tB"></div>':'');
+  if(q)h+='<p><b>'+(B?'Comparando las columnas finales, ¿son equivalentes A y B?':'Según la columna final, la fórmula es…')+'</b></p><div class="qo"></div>';
+  h+='<div><button class="act" data-a="c">Comprobar</button><button class="act" data-a="v">Ver corrección</button><button class="act" data-a="r">Reiniciar</button></div><div class="fb"></div>';
+  el.innerHTML=h;parent.appendChild(el);
+  var T=[Table(el.querySelector('.tA'),A,vs,true)];if(B)T.push(Table(el.querySelector('.tB'),B,vs,true));
+  var fb=el.querySelector('.fb'),ob=[];
+  if(q)opts.forEach(function(o,i){var b=document.createElement('button');b.className='opt';b.textContent=o;
+    b.onclick=function(){sel=i;ob.forEach(function(x){x.className='opt'});b.className='opt sel'};
+    el.querySelector('.qo').appendChild(b);ob.push(b)});
+  function correct(){
+    var fa=T[0].final();
+    if(B){var fbb=T[1].final(),d=-1;fa.forEach(function(x,i){if(d<0&&x!==fbb[i])d=i});
+      if(d<0)return {i:0,t:'Las columnas finales de A y B son idénticas, fila a fila: A ≡ B.'};
+      var r=T[0].rows[d],w=vs.map(function(v){return v+'='+vf(r[v])}).join(', ');
+      return {i:1,t:'En la fila '+(d+1)+' ('+w+') A vale '+vf(fa[d])+' y B vale '+vf(fbb[d])+'. Basta una fila distinta para que NO sean equivalentes.'}}
+    var nv=fa.filter(function(x){return x}).length;
+    return nv===fa.length?{i:0,t:'La columna final solo tiene V: es una tautología (verdadera en todas las filas).'}:
+      nv===0?{i:1,t:'La columna final solo tiene F: es una contradicción (falsa en todas las filas).'}:
+      {i:2,t:'La columna final mezcla V y F: es una contingencia (depende de los valores de las letras).'}}
+  function show(msg,ok){fb.style.display='block';fb.className='fb '+(ok?'ok':'bad');fb.innerHTML=msg}
+  el.addEventListener('click',function(x){
+    var a=x.target.getAttribute&&x.target.getAttribute('data-a');if(!a)return;
+    if(a==='c'){
+      var rs=T.map(function(t){return t.check()}),all=rs.every(function(r){return r.all}),m=[],qok=true;
+      if(all)m.push('Tabla correcta.');
+      else rs.forEach(function(r,i){if(!r.all&&m.length<1)m.push((B?'Tabla de '+(i?'B':'A')+': ':'')+r.good+' de '+r.tot+' casillas correctas. '+r.hint)});
+      if(q){var c=correct();
+        if(sel<0){qok=false;m.push('Falta contestar la pregunta final.')}
+        else if(sel===c.i)m.push('Respuesta final correcta. '+c.t);
+        else{qok=false;m.push('La respuesta final no es correcta. Mira otra vez la columna final y vuelve a pensarlo.')}}
+      var ok=all&&qok;TV.check();TV.log('comprobar','ej '+e.n+': '+(ok?'correcto':'incompleto')+' ('+rs.map(function(r){return r.good+'/'+r.tot}).join(' · ')+')');if(ok){solved[e.n]=1;cnt();TV.solve(e.n)}
+      show(m.join('<br>'),ok)}
+    if(a==='v'){TV.help(e.n);T.forEach(function(t){t.reveal()});var m2='Corrección: la tabla se ha rellenado y cada paso está explicado debajo. Cuando lo hayas entendido, pulsa Reiniciar y repítela tú.';
+      if(q){var c2=correct();ob.forEach(function(b,i){b.className='opt'+(i===c2.i?' ok':'')});m2+='<br>'+c2.t}
+      show(m2,true)}
+    if(a==='r'){TV.log('reiniciar','ej '+e.n);T.forEach(function(t){t.reset()});sel=-1;ob.forEach(function(b){b.className='opt'});fb.style.display='none'}
+  });
+  TOTAL++}
+
+var BANK=[
+['A. Tablas simples (una sola conectiva)'],
+{n:1,lvl:1,t:'La negación: el examen',f:'¬p',dic:{p:'«Hoy tenemos examen de Filosofía»'},ctx:'Un compañero dice: «Hoy no tenemos examen». ¿En qué casos dice la verdad?'},
+{n:2,lvl:1,t:'La conjunción: ver una serie',f:'p ∧ q',dic:{p:'«Tengo batería en el móvil»',q:'«Tengo conexión a internet»'},ctx:'Para ver tu serie favorita necesitas las dos cosas. Frase: «Tengo batería y tengo internet».'},
+{n:3,lvl:1,t:'La disyunción: el recreo',f:'p ∨ q',dic:{p:'«Me llevo bocadillo de casa»',q:'«Compro algo en la cantina»'},ctx:'Frase: «Me llevo bocadillo o compro algo en la cantina». Recuerda que la «o» lógica es inclusiva.'},
+{n:4,lvl:1,t:'El condicional: una promesa',f:'p → q',dic:{p:'«Apruebas el examen»',q:'«Te invito a un helado»'},ctx:'Promesa: «Si apruebas, te invito a un helado». ¿En qué fila se ha roto la promesa?'},
+{n:5,lvl:1,t:'El bicondicional: el descuento',f:'p ↔ q',dic:{p:'«Tengo descuento en el cine»',q:'«Soy estudiante»'},ctx:'Condición del cine: «Hay descuento si y solo si eres estudiante».'},
+['B. Tablas complejas (varias conectivas, hasta 3 letras)'],
+{n:6,lvl:2,t:'La clase de surf',f:'(p ∧ q) → r',dic:{p:'«Hay viento fuerte»',q:'«Hay mucho oleaje»',r:'«Se suspende la clase de surf»'},ctx:'Norma de una escuela de surf de Fuerteventura: «Si hay viento fuerte y mucho oleaje, se suspende la clase». 8 filas: ve con calma.'},
+{n:7,lvl:2,t:'Ni examen ni trabajo',f:'¬(p ∨ q)',dic:{p:'«Hay examen mañana»',q:'«Hay un trabajo que entregar»'},ctx:'Primero calcula el paréntesis y después la negación. Frase: «Mañana no hay examen ni trabajo».'},
+{n:8,lvl:2,t:'¿Dónde estudio?',f:'p ∨ (q ∧ ¬r)',dic:{p:'«Me quedo en la biblioteca del instituto»',q:'«Estoy en casa»',r:'«Hay ruido en casa»'},ctx:'Puedo estudiar si me quedo en la biblioteca o si estoy en casa y no hay ruido. Empieza por ¬r.'},
+{n:9,lvl:3,t:'Entrenar para ganar',f:'(p → q) ∧ (q → r)',dic:{p:'«Entreno»',q:'«Mejoro»',r:'«Gano la carrera de fin de curso»'},ctx:'«Si entreno, mejoro; y si mejoro, gano». Calcula primero los dos condicionales y luego la conjunción.'},
+['C. ¿Tautología, contradicción o contingencia?'],
+{n:10,lvl:1,t:'Mañana llueve o no llueve',f:'p ∨ ¬p',cl:1,dic:{p:'«Mañana llueve en Puerto del Rosario»'},ctx:'Rellena la tabla y clasifica la fórmula.'},
+{n:11,lvl:1,t:'Estoy y no estoy',f:'p ∧ ¬p',cl:1,dic:{p:'«Estoy en clase»'},ctx:'«Estoy en clase y no estoy en clase». Rellena la tabla y clasifica.'},
+{n:12,lvl:2,t:'La beca y el portátil (1)',f:'(p ∧ q) → p',cl:1,dic:{p:'«Me dan una beca»',q:'«Me dan un portátil»'},ctx:'«Si me dan una beca y un portátil, entonces me dan una beca».'},
+{n:13,lvl:2,t:'La beca y el portátil (2)',f:'p → (p ∧ q)',cl:1,dic:{p:'«Me dan una beca»',q:'«Me dan un portátil»'},ctx:'«Si me dan una beca, entonces me dan una beca y un portátil». ¿Es lo mismo que el ejercicio anterior?'},
+{n:14,lvl:3,t:'El modus ponens',f:'((p → q) ∧ p) → q',cl:1,dic:{p:'«Hay examen»',q:'«Estudio»'},ctx:'«Si hay examen, estudio; hay examen; por tanto, estudio». Es la forma de razonar más básica: ¿qué tipo de fórmula es?'},
+['D. ¿Son equivalentes? (dos fórmulas)'],
+{n:15,lvl:2,t:'«Si estudias, apruebas» y «no estudias o apruebas»',f:'p → q',g:'¬p ∨ q',dic:{p:'«Estudias»',q:'«Apruebas»'},ctx:'Rellena las dos tablas y compara las columnas finales.'},
+{n:16,lvl:2,t:'No tengo las dos cosas (De Morgan)',f:'¬(p ∧ q)',g:'¬p ∨ ¬q',dic:{p:'«Tengo tablet»',q:'«Tengo móvil»'},ctx:'«No tengo a la vez tablet y móvil» frente a «No tengo tablet o no tengo móvil».'},
+{n:17,lvl:2,t:'Llueve y el suelo se moja (el recíproco)',f:'p → q',g:'q → p',dic:{p:'«Llueve»',q:'«El suelo está mojado»'},ctx:'«Si llueve, el suelo se moja» frente a «Si el suelo está mojado, llueve». Piensa: ¿puede estar mojado por una manguera?'},
+{n:18,lvl:2,t:'El contrarrecíproco',f:'p → q',g:'¬q → ¬p',dic:{p:'«Llueve»',q:'«El suelo está mojado»'},ctx:'«Si llueve, el suelo se moja» frente a «Si el suelo no está mojado, no llueve».'},
+{n:19,lvl:2,t:'Qué significa «si y solo si»',f:'p ↔ q',g:'(p → q) ∧ (q → p)',dic:{p:'«Tengo descuento»',q:'«Soy estudiante»'},ctx:'«Descuento si y solo si estudiante» frente a «si estudiante, descuento; y si descuento, estudiante».'},
+{n:20,lvl:3,t:'La propiedad distributiva',f:'p ∨ (q ∧ r)',g:'(p ∨ q) ∧ (p ∨ r)',dic:{p:'«Voy al cine»',q:'«Voy a cenar»',r:'«Voy al parque»'},ctx:'8 filas por tabla. «Voy al cine, o voy a cenar y al parque» frente a «Voy al cine o a cenar, y voy al cine o al parque».'}
+];
+var QS=[
+['Fuerteventura es una isla del archipiélago canario.',0,'Es una proposición y es verdadera.'],
+['¿Has hecho ya la tarea de Filosofía?',2,'Es una pregunta: no afirma nada, no es ni V ni F.'],
+['El Teide está en Fuerteventura.',1,'Es una proposición, pero falsa: el Teide está en Tenerife.'],
+['¡Silencio, por favor!',2,'Es una orden: no se puede decir que sea verdadera o falsa.'],
+['Platón fue discípulo de Sócrates.',0,'Es una proposición y es verdadera.'],
+['7 + 5 = 13',1,'Es una proposición (matemática) y es falsa: 7 + 5 = 12.']];
+var CONN=[
+['¬p','Negación ¬ («no»)','p: «Hoy hay clase». ¬p: «Hoy no hay clase». Invierte el valor.'],
+['p ∧ q','Conjunción ∧ («y», «pero», «aunque»)','«Tengo batería y tengo internet». Solo es V si se cumplen las dos.'],
+['p ∨ q','Disyunción ∨ («o»)','«Me llevo bocadillo o compro en la cantina». Solo es F si fallan las dos.'],
+['p → q','Condicional → («si… entonces…»)','«Si apruebas, te invito a un helado». Solo es F si p es V y q es F.'],
+['p ↔ q','Bicondicional ↔ («si y solo si»)','«Hay descuento si y solo si eres estudiante». Es V cuando p y q coinciden.']];
+
+function init(){
+  var rq=document.getElementById('rapidas');
+  QS.forEach(function(x,k){
+    var d=document.createElement('div');d.className='box';
+    d.innerHTML='<p>'+(k+1)+'. «'+x[0]+'»</p>';
+    ['Verdadera','Falsa','No es proposición'].forEach(function(o,i){
+      var b=document.createElement('button');b.className='opt';b.textContent=o;
+      b.onclick=function(){var bs=d.querySelectorAll('button');for(var z=0;z<bs.length;z++)bs[z].className='opt';
+        b.className='opt '+(i===x[1]?'ok':'bad');f.style.display='block';f.className='fb '+(i===x[1]?'ok':'bad');
+        f.textContent=(i===x[1]?'Correcto. ':'No exactamente. ')+x[2];TV.log('rapida',(k+1)+': '+o+(i===x[1]?' (bien)':' (mal)'))};
+      d.appendChild(b)});
+    var f=document.createElement('div');f.className='fb';d.appendChild(f);rq.appendChild(d)});
+  var cn=document.getElementById('conn');
+  CONN.forEach(function(c){var d=document.createElement('div');d.className='box';d.style.flex='1 1 260px';
+    d.innerHTML='<h3>'+c[1]+'</h3><div class="st"></div><p>'+c[2]+'</p>';cn.appendChild(d);
+    var n=parse(c[0]);Table(d.querySelector('.st'),n,vars(n,[]).sort(),false)});
+  var ej=document.getElementById('ej');
+  BANK.forEach(function(x){
+    if(Array.isArray(x)){var h=document.createElement('h3');h.textContent=x[0];h.style.margin='1.4em 0 .2em';ej.appendChild(h)}
+    else Exercise(x,ej)});
+  cnt();
+  var inp=document.getElementById('labin'),sb=document.getElementById('symbtn');
+  ['¬','∧','∨','→','↔','(',')','p','q','r','s'].forEach(function(s){
+    var b=document.createElement('button');b.className='sym';b.textContent=s;b.type='button';
+    b.onclick=function(){var a=inp.selectionStart||inp.value.length,z=inp.selectionEnd||a;
+      inp.value=inp.value.slice(0,a)+s+inp.value.slice(z);inp.focus();inp.setSelectionRange(a+1,a+1)};
+    sb.appendChild(b)});
+  function lab(){
+    var out=document.getElementById('labout');
+    try{var n=parse(inp.value);TV.log('laboratorio',str(n,true));var vs0=0,vs=VARS.filter(function(v){return vars(n,[]).indexOf(v)>=0});
+      if(n.t==='var'){out.innerHTML='<p>Escribe una fórmula con al menos una conectiva.</p>';return}
+      var host=document.createElement('div'),t=Table(host,n,vs,false);
+      var f=rows(vs).map(function(e){return ev(n,e)}),nv=f.filter(function(x){return x}).length;
+      var c=nv===f.length?'tautología':nv===0?'contradicción':'contingencia';
+      out.innerHTML='';out.appendChild(host);var p=document.createElement('p');
+      p.innerHTML='<b>'+str(n,true)+'</b> es una <b>'+c+'</b> ('+nv+' filas V y '+(f.length-nv)+' filas F de '+f.length+').';out.appendChild(p)
+    }catch(err){out.innerHTML='<p class="fb bad" style="display:block">'+err+'</p>'}}
+  document.getElementById('labgo').onclick=lab;inp.onkeydown=function(e){if(e.key==='Enter')lab()};lab()}
+init();TV.boot();
+})();
+</script>
+</body>
+</html>
